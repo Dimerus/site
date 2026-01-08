@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ВВП по странам 2024</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: #333;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .controls {
+      padding: 20px;
+      background: #ecf0f1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    input, select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    input {
+      flex-grow: 1;
+      min-width: 250px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background-color: #34495e;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      position: sticky;
+      top: 0;
+    }
+
+    th:hover {
+      background-color: #2c3e50;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f7fd;
+    }
+
+    .gdp-value {
+      text-align: right;
+      font-weight: 600;
+      color: #27ae60;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+      }
+
+      input {
+        min-width: 100%;
+      }
+
+      th, td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ВВП по странам (2024)</h1>
+      <div class="subtitle">Номинальный ВВП в миллиардах долларов США</div>
+    </header>
+
+    <div class="controls">
+      <input type="text" id="search" placeholder="Поиск по стране...">
+      <select id="region-filter">
+        <option value="">Все регионы</option>
+        <option value="Северная Америка">Северная Америка</option>
+        <option value="Европа">Европа</option>
+        <option value="Восточная Азия">Восточная Азия</option>
+        <option value="Южная Азия">Южная Азия</option>
+        <option value="Юго-Восточная Азия">Юго-Восточная Азия</option>
+        <option value="Латинская Америка">Латинская Америка</option>
+        <option value="Африка">Африка</option>
+        <option value="Ближний Восток">Ближний Восток</option>
+        <option value="Океания">Океания</option>
+        <option value="Центральная Азия">Центральная Азия</option>
+      </select>
+    </div>
+
+    <table id="gdp-table">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">Место ▲▼</th>
+          <th onclick="sortTable(1)">Страна ▲▼</th>
+          <th onclick="sortTable(2)">ВВП (млрд USD) ▲▼</th>
+          <th onclick="sortTable(3)">Регион ▲▼</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <!-- Данные будут добавлены через JS -->
+      </tbody>
+    </table>
+
+    <footer>
+      Источник: МВФ (World Economic Outlook, 2025)
+    </footer>
+  </div>
+
+  <script>
+    // Данные ВВП стран (2024)
+    const gdpData = [
+      { rank: 1, country: "США", gdp: 28780, region: "Северная Америка" },
+      { rank: 2, country: "Китай", gdp: 18520, region: "Восточная Азия" },
+      { rank: 3, country: "Германия", gdp: 4720, region: "Европа" },
+      { rank: 4, country: "Япония", gdp: 4200, region: "Восточная Азия" },
+      { rank: 5, country: "Индия", gdp: 4170, region: "Южная Азия" },
+      { rank: 6, country: "Великобритания", gdp: 3560, region: "Европа" },
+      { rank: 7, country: "Франция", gdp: 3200, region: "Европа" },
+      { rank: 8, country: "Италия", gdp: 2420, region: "Европа" },
+      { rank: 9, country: "Бразилия", gdp: 2240, region: "Латинская Америка" },
+      { rank: 10, country: "Канада", gdp: 2200, region: "Северная Америка" },
+      { rank: 11, country: "Россия", gdp: 2050, region: "Европа/Азия" },
+      { rank: 12, country: "Южная Корея", gdp: 1890, region: "Восточная Азия" },
+      { rank: 13, country: "Австралия", gdp: 1820, region: "Океания" },
+      { rank: 14, country: "Мексика", gdp: 1800, region: "Латинская Америка" },
+      { rank: 15, country: "Индонезия", gdp: 1520, region: "Юго-Восточная Азия" },
+      { rank: 16, country: "Испания", gdp: 1510, region: "Европа" },
+      { rank: 17, country: "Нидерланды", gdp: 1150, region: "Европа" },
+      { rank: 18, country: "Саудовская Аравия", gdp: 1060, region: "Ближний Восток" },
+      { rank: 19, country: "Турция", gdp: 1040, region: "Европа/Ближний Восток" },
+      { rank: 20, country: "Швейцария", gdp: 920, region: "Европа" },
+      { rank: 21, country: "Польша", gdp: 840, region: "Европа" },
+      { rank: 22, country: "Таиланд", gdp: 620, region: "Юго-Восточная Азия" },
+      { rank: 23, country: "Швеция", gdp: 620, region: "Европа" },
+      { rank: 24, country: "Бельгия", gdp: 610, region: "Европа" },
+      { rank: 25, country: "Ирландия", gdp: 590, region: "Европа" },
+      { rank: 26, country: "Норвегия", gdp: 580, region: "Европа" },
+      { rank: 27, country: "Израиль", gdp: 550, region: "Ближний Восток" },
+      { rank: 28, country: "ОАЭ", gdp: 540, region: "Ближний Восток" },
+      { rank: 29, country: "Нигерия", gdp: 520, region: "Африка" },
+      { rank: 30, country: "Аргентина", gdp: 500, region: "Латинская Америка" },
+      { rank: 31, country: "Австрия", gdp: 490, region: "Европа" },
+      { rank: 32, country: "ЮАР", gdp: 450, region: "Африка" },
+      { rank: 33, country: "Дания", gdp: 440, region: "Европа" },
+      { rank: 34, country: "Малайзия", gdp: 430, region: "Юго-Восточная Азия" },
+      { rank: 35, country: "Сингапур", gdp: 420, region: "Юго-Восточная Азия" },
+      { rank: 36, country: "Колумбия", gdp: 410, region: "Латинская Америка" },
+      { rank: 37, country: "Бангладеш", gdp: 400, region: "Южная Азия" },
+      { rank: 38, country: "Чили", gdp: 380, region: "Латинская Америка" },
+      { rank: 39, country: "Финляндия", gdp: 320, region: "Европа" },
+      { rank: 40, country: "Египет", gdp: 310, region: "Африка / Ближний Восток" },
+      { rank: 41, country: "Пакистан", gdp: 300, region: "Южная Азия" },
+      { rank: 42, country: "Филиппины", gdp: 290, region: "Юго-Восточная Азия" },
+      { rank: 43, country: "Вьетнам", gdp: 280, region: "Юго-Восточная Азия" },
+      { rank: 44, country: "Чехия", gdp: 270, region: "Европа" },
+      { rank: 45, country: "Португалия", gdp: 265, region: "Европа" },
+      { rank: 46, country: "Перу", gdp: 260, region: "Латинская Америка" },
+      { rank: 47, country: "Ирак", gdp: 255, region: "Ближний Восток" },
+      { rank: 48, country: "Украина", gdp: 240, region: "Европа" },
+      { rank: 49, country: "Казахстан", gdp: 230, region: "Центральная Азия" },
+      { rank: 50, country: "Эфиопия", gdp: 180, region: "Африка" }
+    ];
+
+    const tableBody = document.getElementById('table-body');
+    let currentSort = { column: 0, direction: 'asc' };
+
+    function renderTable(data) {
+      tableBody.innerHTML = '';
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.rank}</td>
+          <td>${item.country}</td>
+          <td class="gdp-value">${item.gdp.toLocaleString()}</td>
+          <td>${item.region}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function sortTable(columnIndex) {
+      const direction = currentSort.column === columnIndex && currentSort.direction === 'asc' ? 'desc' : 'asc';
+      currentSort = { column: columnIndex, direction };
+
+      const sortedData = [...gdpData].sort((a, b) => {
+        let valA, valB;
+        if (columnIndex === 0) {
+          valA = a.rank;
+          valB = b.rank;
+        } else if (columnIndex === 1) {
+          valA = a.country;
+          valB = b.country;
+        } else if (columnIndex === 2) {
+          valA = a.gdp;
+          valB = b.gdp;
+        } else {
+          valA = a.region;
+          valB = b.region;
+        }
+
+        if (typeof valA === 'string') {
+          return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else {
+          return direction === 'asc' ? valA - valB : valB - valA;
+        }
+      });
+
+      renderTable(sortedData);
+    }
+
+    function filterTable() {
+      const searchTerm = document.getElementById('search').value.toLowerCase();
+      const regionFilter = document.getElementById('region-filter').value;
+      
+      const filteredData = gdpData.filter(item => {
+        const matchesSearch = item.country.toLowerCase().includes(searchTerm);
+        const matchesRegion = regionFilter === '' || item.region === regionFilter;
+        return matchesSearch && matchesRegion;
+      });
+
+      renderTable(filteredData);
+    }
+
+    document.getElementById('search').addEventListener('input', filterTable);
+    document.getElementById('region-filter').addEventListener('change', filterTable);
+
+    // Изначальная отрисовка
+    renderTable(gdpData);
+  </script>
+</body>
+</html>
+
